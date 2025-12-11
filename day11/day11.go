@@ -32,8 +32,12 @@ func main() {
 	// part 1
 	sol1 := countPaths("you", m)
 
+	// part 2
+	cache := map[string]int{}
+	sol2 := countPathsPart2("svr", m, false, false, cache)
+
 	fmt.Println("sol1:", sol1)
-	fmt.Println("sol2:")
+	fmt.Println("sol2:", sol2)
 }
 
 func countPaths(node string, connections map[string][]string) int {
@@ -48,5 +52,36 @@ func countPaths(node string, connections map[string][]string) int {
 		}
 	}
 
+	return count
+}
+
+func countPathsPart2(node string, connections map[string][]string, visitedDac, visitedFft bool, cache map[string]int) int {
+	if node == "dac" {
+		visitedDac = true
+	}
+	if node == "fft" {
+		visitedFft = true
+	}
+
+	if node == "out" {
+		if visitedDac && visitedFft {
+			return 1
+		}
+		return 0
+	}
+
+	key := fmt.Sprintf("%s-%t-%t", node, visitedDac, visitedFft)
+	if val, ok := cache[key]; ok {
+		return val
+	}
+
+	count := 0
+	if nextNodes, ok := connections[node]; ok {
+		for _, next := range nextNodes {
+			count += countPathsPart2(next, connections, visitedDac, visitedFft, cache)
+		}
+	}
+
+	cache[key] = count
 	return count
 }
