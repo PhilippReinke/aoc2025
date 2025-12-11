@@ -18,13 +18,32 @@ func main() {
 	dataTrimmed := strings.TrimRight(string(data), "\n")
 	lines := strings.Split(string(dataTrimmed), "\n")
 
-	var sol1, sol2 int
+	var sol1 int
 	for _, line := range lines {
 		wantState, buttons, _ := parse(line)
 
-		fmt.Println(wantState)
-		fmt.Println(buttons)
+		initState := make(State, len(wantState))
+		states := []State{initState}
+		for {
+			sol1++
+			var updatedStates []State
+			for _, b := range buttons {
+				for _, s := range states {
+					update := s.Apply(b)
+					updatedStates = append(updatedStates, update)
+					if update.Equal(wantState) {
+						goto done
+					}
+				}
+			}
+			states = updatedStates
+		}
+	done:
 	}
+
+	var sol2 int
+	// TODO: part 2
+	// brute force will not
 
 	fmt.Println("sol1:", sol1)
 	fmt.Println("sol2:", sol2)
@@ -35,9 +54,7 @@ type Button []int
 
 func (s State) Copy() State {
 	cpy := make(State, len(s))
-	for i := range s {
-		cpy[i] = s[i]
-	}
+	copy(cpy, s)
 	return cpy
 }
 
@@ -61,10 +78,51 @@ func (s State) Equal(other State) bool {
 	return true
 }
 
+type Joltage []int
+
+func (j Joltage) Copy() Joltage {
+	cpy := make(Joltage, len(j))
+	copy(cpy, j)
+	return cpy
+}
+
+func (j Joltage) Apply(b Button) Joltage {
+	newJoltage := j.Copy()
+	for _, idx := range b {
+		newJoltage[idx]++
+	}
+	return newJoltage
+}
+
+func (j Joltage) Equal(other Joltage) bool {
+	if len(j) != len(other) {
+		return false
+	}
+	for idx := range j {
+		if j[idx] != other[idx] {
+			return false
+		}
+	}
+	return true
+}
+
+func (j Joltage) Exceeds(other Joltage) bool {
+	if len(j) != len(other) {
+		panic("exceeds length mismatch")
+	}
+	for idx := range len(j) {
+		if j[idx] > other[idx] {
+			return true
+		}
+	}
+	return false
+}
+
 // parse parses line to desired states, buttons, joltage
-func parse(line string) (State, []Button, []int) {
+func parse(line string) (State, []Button, Joltage) {
 	var states State
 	var buttons []Button
+	var joltage Joltage
 
 	for seg := range strings.SplitSeq(line, " ") {
 		switch seg[0] {
@@ -84,12 +142,18 @@ func parse(line string) (State, []Button, []int) {
 			}
 			buttons = append(buttons, button)
 		case '{':
-			continue
+			for numString := range strings.SplitSeq(seg[1:len(seg)-1], ",") {
+				num, err := strconv.Atoi(numString)
+				if err != nil {
+					panic(err)
+				}
+				joltage = append(joltage, num)
+			}
 		default:
 			fmt.Println("unknown seg start:", seg)
 			panic("failed to parse line")
 		}
 	}
 
-	return states, buttons, []int{}
+	return states, buttons, joltage
 }
