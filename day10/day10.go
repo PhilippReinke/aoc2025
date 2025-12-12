@@ -41,16 +41,16 @@ func main() {
 	done:
 	}
 
-	var sol2 int
-	// TODO: part 2
-	// brute force will not
+	// Part 2 is done in Python
+	// There is no good lib for LP problems
+	// (◡︵◡)
 
 	fmt.Println("sol1:", sol1)
-	fmt.Println("sol2:", sol2)
 }
 
-type State []bool
+type Joltage []int
 type Button []int
+type State []bool
 
 func (s State) Copy() State {
 	cpy := make(State, len(s))
@@ -76,46 +76,6 @@ func (s State) Equal(other State) bool {
 		}
 	}
 	return true
-}
-
-type Joltage []int
-
-func (j Joltage) Copy() Joltage {
-	cpy := make(Joltage, len(j))
-	copy(cpy, j)
-	return cpy
-}
-
-func (j Joltage) Apply(b Button) Joltage {
-	newJoltage := j.Copy()
-	for _, idx := range b {
-		newJoltage[idx]++
-	}
-	return newJoltage
-}
-
-func (j Joltage) Equal(other Joltage) bool {
-	if len(j) != len(other) {
-		return false
-	}
-	for idx := range j {
-		if j[idx] != other[idx] {
-			return false
-		}
-	}
-	return true
-}
-
-func (j Joltage) Exceeds(other Joltage) bool {
-	if len(j) != len(other) {
-		panic("exceeds length mismatch")
-	}
-	for idx := range len(j) {
-		if j[idx] > other[idx] {
-			return true
-		}
-	}
-	return false
 }
 
 // parse parses line to desired states, buttons, joltage
